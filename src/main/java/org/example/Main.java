@@ -15,7 +15,12 @@ public class Main {
         JsonDataManager dataManager = new JsonDataManager(new File("C:\\Users\\Antoni\\IdeaProjects\\DarkHeresyBot\\src\\main\\resources\\characters.json"));
         CharacterManager characterManager = new CharacterManager(dataManager);
         //TODO: remove secret
-        JDA api = JDABuilder.createDefault("MTI5MjE2MTg4MDMwMjgxMzIzNQ.GZxOg9.5USjGVogZbgS1zHf8zi_eP9L7TH17pLobMUNXI")
+        String apiToken = System.getenv("DARK_HERESY_API_TOKEN");
+        if (apiToken == null) {
+            System.out.println("Please set DARK_HERESY_API_TOKEN env variable.");
+            return;
+        }
+        JDA api = JDABuilder.createDefault(apiToken)
                 .addEventListeners(new CreateCharacterStateListener(characterManager),
                         new TestStateListener(characterManager))
                 .build()
@@ -27,7 +32,5 @@ public class Main {
                 Commands.slash("test", "Roll a skill test")
                         //.addOptions(new OptionData(OptionType.BOOLEAN, "no-switch", "Don't switch to the new character once done")
         ).complete();
-        System.out.println("Commands added");
-        System.out.println(api.retrieveCommands().complete());
     }
 }
