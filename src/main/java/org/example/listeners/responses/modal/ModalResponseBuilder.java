@@ -1,8 +1,11 @@
 package org.example.listeners.responses.modal;
 
+import net.dv8tion.jda.api.interactions.components.ActionRow;
+import net.dv8tion.jda.api.interactions.components.ItemComponent;
 import net.dv8tion.jda.api.interactions.components.LayoutComponent;
 import net.dv8tion.jda.api.interactions.modals.Modal;
 import net.dv8tion.jda.api.requests.restaction.interactions.ModalCallbackAction;
+import org.example.listeners.responses.ResponseBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,8 +27,18 @@ public class ModalResponseBuilder {
         return this;
     }
 
-    public ModalResponseBuilder addComponents(List<LayoutComponent> components) {
-        this.components.addAll(components);
+    public ModalResponseBuilder addActionRow(ItemComponent ...components) {
+        this.components.add(ActionRow.of(components));
+        return this;
+    }
+
+    public ModalResponseBuilder addComponent(LayoutComponent component) {
+        components.add(component);
+        return this;
+    }
+
+    public ModalResponseBuilder addComponents(LayoutComponent ...components) {
+        this.components.addAll(List.of(components));
         return this;
     }
 
