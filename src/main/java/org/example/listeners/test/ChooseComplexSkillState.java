@@ -11,7 +11,6 @@ import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle;
 import net.dv8tion.jda.api.interactions.components.selections.SelectOption;
 import net.dv8tion.jda.api.interactions.components.selections.StringSelectMenu;
 import org.example.Skill;
-import org.example.character.Character;
 import org.example.character.Characteristics;
 import org.example.character.skills.ComplexSkills;
 import org.example.listeners.ListenerState;
@@ -20,13 +19,12 @@ import org.example.listeners.UnexpectedEventException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ChooseComplexSkillState extends ListenerState {
+public class ChooseComplexSkillState extends ListenerState<TestContext> {
     private static final String skillSelectId = "skill-select";
     private static final String specializationSelectId = "specialization-select";
     private static final String cancelId = "cancel";
     private static final String continueID = "continue";
 
-    private final Character character;
     private final InteractionHook hook;
     private ComplexSkills chosenSkill;
     private Skill chosenSpecialization;
@@ -68,8 +66,7 @@ public class ChooseComplexSkillState extends ListenerState {
         }};
     }
 
-    public ChooseComplexSkillState(IReplyCallback event, Character character) {
-        this.character = character;
+    public ChooseComplexSkillState(IReplyCallback event) {
         event.reply("Which skill to test?")
                 .setComponents(getMessageComponents())
                 .setEphemeral(true)
@@ -78,7 +75,7 @@ public class ChooseComplexSkillState extends ListenerState {
     }
 
     @Override
-    public ListenerState handleButtonEvent(ButtonInteractionEvent event) throws UnexpectedEventException {
+    public ListenerState<TestContext> handleButtonEvent(ButtonInteractionEvent event) throws UnexpectedEventException {
         Button button = event.getButton();
         switch (button.getId()) {
             case cancelId -> {
@@ -90,7 +87,7 @@ public class ChooseComplexSkillState extends ListenerState {
                 Characteristics baseCharacteristic = chosenSkill.mainCharacteristic;
                 List<Characteristics> possibleCharacteristics = new ArrayList<>(List.of(chosenSkill.secondaryCharacteristics));
                 possibleCharacteristics.add(baseCharacteristic);
-                return new ChooseCharacteristicState(event, character, possibleCharacteristics, baseCharacteristic, chosenSpecialization);
+                return new ChooseCharacteristicState(event, possibleCharacteristics, baseCharacteristic, chosenSpecialization);
             }
             default ->
                     throw new UnexpectedEventException();
@@ -98,14 +95,12 @@ public class ChooseComplexSkillState extends ListenerState {
     }
 
     @Override
-    public ListenerState handleStringSelectEvent(StringSelectInteractionEvent event) throws UnexpectedEventException {
+    public ListenerState<TestContext> handleStringSelectEvent(StringSelectInteractionEvent event) throws UnexpectedEventException {
         switch (event.getComponentId()) {
-            case skillSelectId -> {
+            case skillSelectId ->
                 chosenSkill = ComplexSkills.getFromName(event.getValues().get(0));
-            }
-            case specializationSelectId -> {
+            case specializationSelectId ->
                 chosenSpecialization = ComplexSkills.getSpecializationFromName(event.getValues().get(0));
-            }
             default ->
                 throw new UnexpectedEventException();
         }

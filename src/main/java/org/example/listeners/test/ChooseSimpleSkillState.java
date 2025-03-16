@@ -10,7 +10,6 @@ import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle;
 import net.dv8tion.jda.api.interactions.components.selections.SelectOption;
 import net.dv8tion.jda.api.interactions.components.selections.StringSelectMenu;
-import org.example.character.Character;
 import org.example.character.Characteristics;
 import org.example.character.skills.SimpleSkills;
 import org.example.listeners.ListenerState;
@@ -19,12 +18,11 @@ import org.example.listeners.UnexpectedEventException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ChooseSimpleSkillState extends ListenerState {
+public class ChooseSimpleSkillState extends ListenerState<TestContext> {
     private static final String skillSelectId = "skill-select";
     private static final String cancelId = "cancel";
     private static final String continueID = "continue";
 
-    private final Character character;
     private final InteractionHook hook;
     private SimpleSkills chosenSkill;
 
@@ -46,8 +44,7 @@ public class ChooseSimpleSkillState extends ListenerState {
         }};
     }
 
-    public ChooseSimpleSkillState(IReplyCallback event, Character character) {
-        this.character = character;
+    public ChooseSimpleSkillState(IReplyCallback event) {
         event.reply("Which skill to test?")
                 .setComponents(getMessageComponents())
                 .setEphemeral(true)
@@ -56,7 +53,7 @@ public class ChooseSimpleSkillState extends ListenerState {
     }
 
     @Override
-    public ListenerState handleButtonEvent(ButtonInteractionEvent event) throws UnexpectedEventException {
+    public ListenerState<TestContext> handleButtonEvent(ButtonInteractionEvent event) throws UnexpectedEventException {
         Button button = event.getButton();
         switch (button.getId()) {
             case cancelId -> {
@@ -68,7 +65,7 @@ public class ChooseSimpleSkillState extends ListenerState {
                 Characteristics baseCharacteristic = chosenSkill.mainCharacteristic;
                 List<Characteristics> possibleCharacteristics = new ArrayList<>(List.of(chosenSkill.secondaryCharacteristics));
                 possibleCharacteristics.add(baseCharacteristic);
-                return new ChooseCharacteristicState(event, character, possibleCharacteristics, baseCharacteristic,chosenSkill);
+                return new ChooseCharacteristicState(event, possibleCharacteristics, baseCharacteristic, chosenSkill);
             }
             default ->
                 throw new UnexpectedEventException();
@@ -76,7 +73,7 @@ public class ChooseSimpleSkillState extends ListenerState {
     }
 
     @Override
-    public ListenerState handleStringSelectEvent(StringSelectInteractionEvent event) throws UnexpectedEventException {
+    public ListenerState<TestContext> handleStringSelectEvent(StringSelectInteractionEvent event) throws UnexpectedEventException {
         boolean matched = false;
         switch (event.getComponentId()) {
             case skillSelectId -> {

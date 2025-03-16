@@ -11,8 +11,6 @@ import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle;
 import net.dv8tion.jda.api.interactions.components.selections.SelectOption;
 import net.dv8tion.jda.api.interactions.components.selections.StringSelectMenu;
 import org.example.Skill;
-import org.example.character.Character;
-import org.example.character.CharacterManager;
 import org.example.character.skills.ComplexSkills;
 import org.example.character.skills.SkillBonuses;
 import org.example.listeners.ListenerState;
@@ -21,7 +19,7 @@ import org.example.listeners.UnexpectedEventException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SetComplexSkillsState extends ListenerState {
+public class SetComplexSkillsState extends ListenerState<CreateCharacterContext> {
     private static final String abortCreationName = "stop-creating";
     private static final String addSkillName = "add-skill";
     private static final String doneName = "done";
@@ -29,9 +27,7 @@ public class SetComplexSkillsState extends ListenerState {
 
     private static final String specializationSelectName = "spec-select";
     private static final String bonusSelectName = "bonus-select";
-    private final Character character;
     private final InteractionHook hook;
-    private final CharacterManager characterManager;
 
     private ComplexSkills complexSkill;
     private Skill skillSpecialization;
@@ -85,9 +81,7 @@ public class SetComplexSkillsState extends ListenerState {
         }};
     }
 
-    public SetComplexSkillsState(IReplyCallback event, Character character, String message, CharacterManager characterManager) {
-        this.character = character;
-        this.characterManager = characterManager;
+    public SetComplexSkillsState(IReplyCallback event, String message) {
         String content = (message == null ? "" : message + '\n') +
                 "Set your " +
                 (message == null ? "" : "remaining ") +
@@ -100,7 +94,7 @@ public class SetComplexSkillsState extends ListenerState {
     }
 
     @Override
-    public ListenerState handleStringSelectEvent(StringSelectInteractionEvent event) throws UnexpectedEventException {
+    public ListenerState<CreateCharacterContext> handleStringSelectEvent(StringSelectInteractionEvent event) throws UnexpectedEventException {
         switch (event.getComponentId()) {
             case skillSelectName -> {
                 ComplexSkills newComplexSkill = ComplexSkills.getFromName(event.getValues().get(0));
@@ -109,12 +103,10 @@ public class SetComplexSkillsState extends ListenerState {
                 }
                 complexSkill = newComplexSkill;
             }
-            case specializationSelectName -> {
+            case specializationSelectName ->
                 skillSpecialization = ComplexSkills.getSpecializationFromName(event.getValues().get(0));
-            }
-            case bonusSelectName -> {
+            case bonusSelectName ->
                 bonus = SkillBonuses.getByName(event.getValues().get(0));
-            }
             default ->
                 throw new UnexpectedEventException();
         }
@@ -124,7 +116,7 @@ public class SetComplexSkillsState extends ListenerState {
     }
 
     @Override
-    public ListenerState handleButtonEvent(ButtonInteractionEvent event) throws UnexpectedEventException {
+    public ListenerState<CreateCharacterContext> handleButtonEvent(ButtonInteractionEvent event) throws UnexpectedEventException {
         switch (event.getComponentId()) {
             case abortCreationName -> {
                 hook.deleteOriginal().queue();
@@ -135,14 +127,14 @@ public class SetComplexSkillsState extends ListenerState {
                 if (skillSpecialization == null || bonus == null) {
                     throw new UnexpectedEventException();
                 }
-                character.setSkill(skillSpecialization, bonus);
+                context.getCharacter().setSkill(skillSpecialization, bonus);
                 hook.deleteOriginal().queue();
-                return new SetComplexSkillsState(event, character, "Set " + skillSpecialization.getName() + " to " + bonus.getName() +"!", characterManager);
+                return new SetComplexSkillsState(event, "Set " + skillSpecialization.getName() + " to " + bonus.getName() +"!");
             }
             case doneName -> {
                 hook.deleteOriginal().queue();
-                event.reply("Character created! Here is a summary:\n" + character.toString()).queue();
-                characterManager.addCharacter(event.getUser().getId(), character, true);
+                event.reply("Character created! Here is a summary:\n" + context.getCharacter().toString()).queue();
+                context.getCharacterManager().addCharacter(event.getUser().getId(), context.getCharacter(), true);
                 return null;
             }
         }

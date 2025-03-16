@@ -4,19 +4,16 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.interactions.InteractionHook;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
-import org.example.character.Character;
 import org.example.listeners.ListenerState;
 import org.example.listeners.UnexpectedEventException;
 
-public class ChooseSkillTypeState extends ListenerState {
-    private final Character character;
+public class ChooseSkillTypeState extends ListenerState<TestContext> {
     private final InteractionHook hook;
     private static final String simpleSkillTestID = "simple-skill-test";
     private static final String complexSkillTestID = "complex-skill-test";
 
 
-    public ChooseSkillTypeState (SlashCommandInteractionEvent event, Character character) {
-        this.character = character;
+    public ChooseSkillTypeState (SlashCommandInteractionEvent event) {
         event.reply("Select skill type")
                 .addActionRow(
                         Button.primary(simpleSkillTestID, "Simple skill test"),
@@ -27,15 +24,15 @@ public class ChooseSkillTypeState extends ListenerState {
     }
 
     @Override
-    public ListenerState handleButtonEvent(ButtonInteractionEvent event) throws UnexpectedEventException {
+    public ListenerState<TestContext> handleButtonEvent(ButtonInteractionEvent event) throws UnexpectedEventException {
         switch (event.getButton().getId()) {
             case simpleSkillTestID -> {
                 hook.deleteOriginal().queue();
-                return new ChooseSimpleSkillState(event, character);
+                return new ChooseSimpleSkillState(event);
             }
             case complexSkillTestID -> {
                 hook.deleteOriginal().queue();
-                return new ChooseComplexSkillState(event, character);
+                return new ChooseComplexSkillState(event);
             }
             default ->
                 throw new UnexpectedEventException();

@@ -4,36 +4,36 @@ import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.interactions.InteractionHook;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
-import org.example.character.Character;
-import org.example.character.CharacterManager;
 import org.example.listeners.ListenerState;
 import org.example.listeners.UnexpectedEventException;
 
-public class SetCharacteristicsState extends ListenerState {
+public class SetCharacteristicsState extends ListenerState<CreateCharacterContext> {
     private static final String setCharacteristicsFirstName = "set-characteristics";
     private static final String abortCreationName = "stop-creating";
-    private final InteractionHook hook;
-    private final Character character;
+
+    private final ModalInteractionEvent sourceEvent;
+    private InteractionHook hook;
     private final int offset;
     private final int count;
-    private final CharacterManager characterManager;
 
-    public SetCharacteristicsState(ModalInteractionEvent event, Character character, int offset, int count, CharacterManager characterManager) {
-        this.character = character;
+    public SetCharacteristicsState(ModalInteractionEvent event, int offset, int count) {
         this.offset = offset;
         this.count = count;
-        this.characterManager = characterManager;
+        this.sourceEvent = event;
+    }
 
-        event.reply("Hello " + character.getName() + "! Please set your characteristics.")
+    @Override
+    protected void whenContextSet() {
+        sourceEvent.reply("Hello " + context.getCharacter().getName() + "! Please set your characteristics.")
                 .addActionRow(
                         Button.primary(setCharacteristicsFirstName, "Set characteristics (pt. " + count + ")"),
                         Button.danger(abortCreationName, "Abort")
                 ).setEphemeral(true).queue();
-        hook = event.getHook();
+        hook = sourceEvent.getHook();
     }
 
     @Override
-    public ListenerState handleButtonEvent(ButtonInteractionEvent event) throws UnexpectedEventException {
+    public ListenerState<CreateCharacterContext> handleButtonEvent(ButtonInteractionEvent event) throws UnexpectedEventException {
         switch (event.getButton().getId()) {
             case abortCreationName -> {
                 hook.deleteOriginal().queue();
@@ -42,7 +42,7 @@ public class SetCharacteristicsState extends ListenerState {
             }
             case setCharacteristicsFirstName -> {
                 hook.deleteOriginal().queue();
-                return new SetCharacteristicsModalState(event, character, offset, count, characterManager);
+                return new SetCharacteristicsModalState(event, offset, count);
             }
             default -> throw new UnexpectedEventException();
         }

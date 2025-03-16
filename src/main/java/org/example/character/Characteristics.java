@@ -35,7 +35,17 @@ public enum Characteristics {
     public static Characteristics getFromId(String id){
         Characteristics[] characteristics = Characteristics.values();
         for (Characteristics characteristic: characteristics) {
-            if (characteristic.id.equals(id)){
+            if (characteristic.getId().equals(id)){
+                return characteristic;
+            }
+        }
+        return null;
+    }
+
+    public static Characteristics getFromName(String name){
+        Characteristics[] characteristics = Characteristics.values();
+        for (Characteristics characteristic: characteristics) {
+            if (characteristic.getName().equals(name)){
                 return characteristic;
             }
         }

@@ -11,7 +11,6 @@ import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle;
 import net.dv8tion.jda.api.interactions.components.selections.SelectOption;
 import net.dv8tion.jda.api.interactions.components.selections.StringSelectMenu;
 import org.example.Skill;
-import org.example.character.Character;
 import org.example.character.Characteristics;
 import org.example.listeners.ListenerState;
 import org.example.listeners.UnexpectedEventException;
@@ -19,12 +18,11 @@ import org.example.listeners.UnexpectedEventException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ChooseCharacteristicState extends ListenerState {
+public class ChooseCharacteristicState extends ListenerState<TestContext> {
 
     private static final String characteristicSelectId = "characteristic-select";
     private static final String cancelId = "cancel";
     private static final String continueID = "continue";
-    private final Character character;
     private final InteractionHook hook;
     private final List<Characteristics> possibleCharacteristics;
     private Characteristics chosenCharacteristic;
@@ -47,10 +45,8 @@ public class ChooseCharacteristicState extends ListenerState {
     }
 
     public ChooseCharacteristicState(IReplyCallback event,
-                                     Character character,
                                      List<Characteristics> possibleCharacteristics,
                                      Characteristics baseCharacteristic, Skill skill) {
-        this.character = character;
         this.possibleCharacteristics = possibleCharacteristics;
         this.chosenCharacteristic = baseCharacteristic;
         this.skill = skill;
@@ -62,7 +58,7 @@ public class ChooseCharacteristicState extends ListenerState {
     }
 
     @Override
-    public ListenerState handleButtonEvent(ButtonInteractionEvent event) throws UnexpectedEventException {
+    public ListenerState<TestContext> handleButtonEvent(ButtonInteractionEvent event) throws UnexpectedEventException {
         Button button = event.getButton();
         switch (button.getId()) {
             case cancelId -> {
@@ -71,7 +67,7 @@ public class ChooseCharacteristicState extends ListenerState {
             }
             case continueID -> {
                 hook.deleteOriginal().queue();
-                return new TestResultState(event, character, skill, chosenCharacteristic);
+                return new TestResultState(event, skill, chosenCharacteristic);
             }
             default ->
                     throw new UnexpectedEventException();
@@ -79,11 +75,10 @@ public class ChooseCharacteristicState extends ListenerState {
     }
 
     @Override
-    public ListenerState handleStringSelectEvent(StringSelectInteractionEvent event) throws UnexpectedEventException {
+    public ListenerState<TestContext> handleStringSelectEvent(StringSelectInteractionEvent event) throws UnexpectedEventException {
         switch (event.getComponentId()) {
-            case characteristicSelectId -> {
-                chosenCharacteristic = Characteristics.getFromId(event.getValues().get(0));
-            }
+            case characteristicSelectId ->
+                chosenCharacteristic = Characteristics.getFromName(event.getValues().get(0));
             default ->
                 throw new UnexpectedEventException();
 

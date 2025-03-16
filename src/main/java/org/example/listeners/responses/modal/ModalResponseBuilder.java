@@ -5,7 +5,6 @@ import net.dv8tion.jda.api.interactions.components.ItemComponent;
 import net.dv8tion.jda.api.interactions.components.LayoutComponent;
 import net.dv8tion.jda.api.interactions.modals.Modal;
 import net.dv8tion.jda.api.requests.restaction.interactions.ModalCallbackAction;
-import org.example.listeners.responses.ResponseBuilder;
 
 import java.util.ArrayList;
 import java.util.List;

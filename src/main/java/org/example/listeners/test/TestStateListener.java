@@ -5,8 +5,9 @@ import org.example.character.Character;
 import org.example.character.CharacterManager;
 import org.example.listeners.ListenerState;
 import org.example.listeners.StateListener;
+import org.example.listeners.responses.ResponseQueuer;
 
-public class TestStateListener extends StateListener {
+public class TestStateListener extends StateListener<TestContext> {
     private final CharacterManager characterManager;
 
     @Override
@@ -15,9 +16,14 @@ public class TestStateListener extends StateListener {
     }
 
     @Override
-    protected ListenerState getInitialState(SlashCommandInteractionEvent event) {
+    protected ListenerState<TestContext> getInitialState(SlashCommandInteractionEvent event) {
+        return new ChooseSkillTypeState(event);
+    }
+
+    @Override
+    protected TestContext getInitialContext(SlashCommandInteractionEvent event) {
         Character character = characterManager.getCharacter(event.getUser().getId());
-        return new ChooseSkillTypeState(event, character);
+        return new TestContext(new ResponseQueuer(), character);
     }
 
     public TestStateListener(CharacterManager characterManager){

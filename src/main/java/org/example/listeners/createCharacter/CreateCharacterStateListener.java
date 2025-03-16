@@ -4,8 +4,9 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import org.example.character.CharacterManager;
 import org.example.listeners.ListenerState;
 import org.example.listeners.StateListener;
+import org.example.listeners.responses.ResponseQueuer;
 
-public class CreateCharacterStateListener extends StateListener {
+public class CreateCharacterStateListener extends StateListener<CreateCharacterContext> {
     private final CharacterManager characterManager;
 
     public CreateCharacterStateListener(CharacterManager characterManager) {
@@ -18,7 +19,12 @@ public class CreateCharacterStateListener extends StateListener {
     }
 
     @Override
-    protected ListenerState getInitialState(SlashCommandInteractionEvent event) {
-        return new SelectNameState(event, characterManager);
+    protected ListenerState<CreateCharacterContext> getInitialState(SlashCommandInteractionEvent event) {
+        return new SelectNameState(event);
+    }
+
+    @Override
+    protected CreateCharacterContext getInitialContext(SlashCommandInteractionEvent event) {
+        return new CreateCharacterContext(new ResponseQueuer(), characterManager);
     }
 }

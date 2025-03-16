@@ -11,8 +11,6 @@ import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle;
 import net.dv8tion.jda.api.interactions.components.selections.SelectOption;
 import net.dv8tion.jda.api.interactions.components.selections.StringSelectMenu;
 import org.example.Skill;
-import org.example.character.Character;
-import org.example.character.CharacterManager;
 import org.example.character.skills.SimpleSkills;
 import org.example.character.skills.SkillBonuses;
 import org.example.listeners.ListenerState;
@@ -21,16 +19,13 @@ import org.example.listeners.UnexpectedEventException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SetSimpleSkillsState extends ListenerState {
+public class SetSimpleSkillsState extends ListenerState<CreateCharacterContext> {
     private static final String abortCreationName = "stop-creating";
     private static final String addSkillName = "add-skill";
     private static final String doneName = "done";
     private static final String skillSelectName = "skill-select";
     private static final String bonusSelectName = "bonus-select";
-    private final Character character;
     private final InteractionHook hook;
-    private final CharacterManager characterManager;
-
 
     private Skill skill;
     private SkillBonuses bonus;
@@ -64,9 +59,7 @@ public class SetSimpleSkillsState extends ListenerState {
         }};
     }
 
-    public SetSimpleSkillsState(IReplyCallback event, Character character, String message, CharacterManager characterManager) {
-        this.character = character;
-        this.characterManager = characterManager;
+    public SetSimpleSkillsState(IReplyCallback event, String message) {
         String content = (message == null ? "" : message + '\n') +
                 "Set your " +
                 (message == null ? "" : "remaining ") +
@@ -79,7 +72,7 @@ public class SetSimpleSkillsState extends ListenerState {
     }
 
     @Override
-    public ListenerState handleStringSelectEvent(StringSelectInteractionEvent event) throws UnexpectedEventException {
+    public ListenerState<CreateCharacterContext> handleStringSelectEvent(StringSelectInteractionEvent event) throws UnexpectedEventException {
         boolean matched = false;
         switch (event.getComponentId()) {
             case skillSelectName -> {
@@ -101,7 +94,7 @@ public class SetSimpleSkillsState extends ListenerState {
     }
 
     @Override
-    public ListenerState handleButtonEvent(ButtonInteractionEvent event) throws UnexpectedEventException {
+    public ListenerState<CreateCharacterContext> handleButtonEvent(ButtonInteractionEvent event) throws UnexpectedEventException {
         switch (event.getComponentId()) {
             case abortCreationName -> {
                 hook.deleteOriginal().queue();
@@ -112,12 +105,12 @@ public class SetSimpleSkillsState extends ListenerState {
                 if (skill == null || bonus == null) {
                     throw new UnexpectedEventException();
                 }
-                character.setSkill(skill, bonus);
+                context.getCharacter().setSkill(skill, bonus);
                 hook.deleteOriginal().queue();
-                return new SetSimpleSkillsState(event, character, "Set " + skill.getName() + " to " + bonus.getName() +"!", characterManager);
+                return new SetSimpleSkillsState(event, "Set " + skill.getName() + " to " + bonus.getName() +"!");
             }
             case doneName -> {
-                return new SetComplexSkillsState(event, character, null, characterManager);
+                return new SetComplexSkillsState(event, null);
             }
         }
         throw new UnexpectedEventException();
